@@ -22,42 +22,15 @@ public class MatchMakingService {
 
   private final ResourceLoader resourceLoader;
 
-  public void suggestTeams(Set<String> players, String leaderA, String leaderB) {
+  public void suggestTeams(Set<String> players) {
     var stats = generateStats();
-    List<String> teamA = new ArrayList<>(List.of(leaderA));
-    List<String> teamB = new ArrayList<>(List.of(leaderB));
-    var teamAScore = 0d;
-    var teamBScore = 0d;
-    Set<String> remainingPlayers = new HashSet<>(players);
-    remainingPlayers.remove(leaderA);
-    remainingPlayers.remove(leaderB);
-    for (String player : remainingPlayers) {
-      double team1Score = calculateTeamScore(teamA, player, stats);
-      double team2Score = calculateTeamScore(teamB, player, stats);
-
-      if (team1Score < team2Score) {
-        teamA.add(player);
-        teamAScore = team1Score;
-      } else if (team1Score > team2Score) {
-        teamB.add(player);
-        teamBScore = team2Score;
-      } else if (teamA.size() < teamB.size()) {
-        teamA.add(player);
-        teamAScore = team1Score;
-      } else {
-        teamB.add(player);
-        teamBScore = team2Score;
-      }
-    }
-    System.out.println("Team A: "+ teamA + ", Score = " + teamAScore);
-    System.out.println("Team B: "+ teamB + ", Score = " + teamBScore);
+    balanceTeams(new ArrayList<>(players), stats);
   }
 
   public Map<String, PlayersConnectionStats> generateStats() {
 
     var matchs = readMatches();
-    Map<String, PlayersConnectionStats> stats = extractStats(matchs);
-    return stats;
+    return extractStats(matchs);
   }
 
   private Map<String, PlayersConnectionStats> extractStats(List<Match> matchs) {
@@ -139,13 +112,13 @@ public class MatchMakingService {
     return list;
   }
 
-  private double calculateTeamScore(final List<String> team, String player, Map<String, PlayersConnectionStats> connectionScores) {
-    var teamProjection = new ArrayList<>(team);
-    teamProjection.add(player);
+  private double calculateTeamScore(final List<String> team, Map<String, PlayersConnectionStats> connectionScores) {
     var score = 0D;
-    for (int i = 0; i < teamProjection.size(); i++) {
-      for (int j = i + 1; j < teamProjection.size(); j++) {
-        var coupleId = teamProjection.stream().sorted().collect(Collectors.joining("_"));
+    for (int i = 0; i < team.size(); i++) {
+      for (int j = i + 1; j < team.size(); j++) {
+        var coupleId = Stream.of(team.get(i), team.get(j))
+            .sorted()
+            .collect(Collectors.joining("_"));
         var coupleScore = connectionScores.containsKey(coupleId)
             ? connectionScores.get(coupleId).getConnectionScore()
             : 0D;
@@ -154,6 +127,55 @@ public class MatchMakingService {
     }
     return score;
   }
-}
 
-//0753317044
+  private List<List<String>> generateCombinations(List<String> players) {
+    List<List<String>> combinations = new ArrayList<>();
+    generateCombinationsHelper(players, 0, 5, new ArrayList<>(), combinations);
+    return combinations;
+  }
+
+  private void generateCombinationsHelper(List<String> players, int start, int teamSize,
+                                          List<String> current, List<List<String>> combinations) {
+    if (current.size() == teamSize) {
+      combinations.add(new ArrayList<>(current));
+      return;
+    }
+
+    for (int i = start; i < players.size(); i++) {
+      current.add(players.get(i));
+      generateCombinationsHelper(players, i + 1, teamSize, current, combinations);
+      current.remove(current.size() - 1);
+    }
+  }
+
+  public void balanceTeams(List<String> players, Map<String, PlayersConnectionStats> scores) {
+    int n = players.size();
+    if (n % 2 != 0) {
+      throw new IllegalArgumentException("Number of players must be even.");
+    }
+
+    List<List<String>> allCombinations = generateCombinations(players);
+    double closestDifference = Double.MAX_VALUE;
+
+    for (List<String> team1 : allCombinations) {
+      Set<String> team1Set = new HashSet<>(team1);
+      List<String> team2 = new ArrayList<>();
+
+      for (String player : players) {
+        if (!team1Set.contains(player)) {
+          team2.add(player);
+        }
+      }
+
+      double scoreTeam1 = calculateTeamScore(team1, scores);
+      double scoreTeam2 = calculateTeamScore(team2, scores);
+      double difference = Math.abs(scoreTeam1 - scoreTeam2);
+
+      if (difference < closestDifference) {
+        closestDifference = difference;
+        System.out.println("Team A: " + team1 + ", Score = " + scoreTeam1);
+        System.out.println("Team B: " + team2 + ", Score = " + scoreTeam2);
+      }
+    }
+  }
+}

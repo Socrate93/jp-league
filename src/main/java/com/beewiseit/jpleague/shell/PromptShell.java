@@ -53,8 +53,7 @@ public class PromptShell {
   ) {
 
     List<String> players = List.of(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10);
-    var leaders = selectTwoRandomItems(players);
-    service.suggestTeams(new HashSet<>(players), leaders[0], leaders[1]);
+    service.suggestTeams(new HashSet<>(players));
     return "OK";
   }
 
