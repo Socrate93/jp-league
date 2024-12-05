@@ -1,0 +1,8 @@
+1733354361342:match
+1733361559049:stats
+1733408724061:help
+1733408854726:teams --p1 Cheikh --p2 Nihed --p3 Petar --p4 Alban --p5 Bob --p6 JP --p6 Karl --p7 Ludo --p8 Monta --p9 Bala --p10 Souhail
+1733409271851:teams --p1 Cheikh --p2 Nihed --p3 Monta --p4 JP --p5 Bob --p6 GuillaumeC --p7 Omar --p8 Pierrick --p9 Bala --p10 Souhail
+1733409294943:teams --p1 Cheikh --p2 Nihed --p3 Monta --p4 JP --p5 Bob --p6 GuillaumeC --p7 Omar --p8 Pierrick --p9 Bala --p10 Souhail
+1733412511659:teamA.add(player);
+1733412544239:teams --p1 Cheikh --p2 Nihed --p3 Monta --p4 JP --p5 Bob --p6 GuillaumeC --p7 Omar --p8 Pierrick --p9 Bala --p10 Souhail

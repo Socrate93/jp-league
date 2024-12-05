@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: jp-league
+  shell:
+    interactive:
+      enabled: true
